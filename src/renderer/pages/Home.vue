@@ -206,7 +206,7 @@
 <script>
   import auth from '@/store/modules/auth'
   import axios from 'axios'
-  import { log } from '@/util/functions'
+  import { log, isDentroHorario, proximaAbertura } from '@/util/functions'
 
   let remote = null
   if (!process.env.IS_WEB) {
@@ -403,7 +403,26 @@
         }
       },
 
+      trans (key, params) {
+        let text = this.$store.state.dict[key] || key
+        if (params) {
+          Object.keys(params).forEach(k => {
+            text = text.replace(`%${k}%`, params[k])
+          })
+        }
+        return text
+      },
+
       ticket (priority) {
+        if (!isDentroHorario(this.config, new Date())) {
+          const proxima = proximaAbertura(this.config, new Date())
+          const message = proxima
+            ? this.trans('error.horario.suspended_until', { hora: proxima })
+            : this.trans('error.horario.suspended')
+          this.$swal('Oops!', message, 'error')
+          return
+        }
+
         this.busy = true
         let promise = Promise.resolve()
 
@@ -625,10 +644,11 @@
     position: fixed
     header
       padding: 1vh 2vh
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .15)
       h1
         color: #ffffff
         font-size: 3rem
-        font-weight: bold
+        font-weight: 700
         padding: 1vh
         text-align: center
         background-repeat: no-repeat
@@ -657,7 +677,16 @@
     .is-xlarge
       font-size: 2.25rem
       line-height: 1
-      border-radius: .3rem
+      padding: 1.5rem 1rem
+      border-radius: 1rem
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .18)
+      transition: transform .12s ease, box-shadow .12s ease
+      &:hover:not([disabled])
+        transform: translateY(-2px)
+        box-shadow: 0 6px 20px rgba(0, 0, 0, .24)
+      &:active:not([disabled])
+        transform: translateY(0)
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .16)
 
     .subservices
       font-size: 1.5rem

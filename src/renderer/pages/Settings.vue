@@ -30,6 +30,11 @@
               </a>
             </li>
             <li>
+              <a @click="showTab('schedule')" :class="{'is-active': tab==='schedule'}">
+                {{ 'menu.schedule'|trans }}
+              </a>
+            </li>
+            <li>
               <a @click="showTab('services')" :class="{'is-active': tab==='services'}">
                 {{ 'menu.services'|trans }}
               </a>
@@ -237,7 +242,7 @@
                   {{ 'settings.label.page_bg_color'|trans }}
                 </label>
                 <div class="control">
-                  <input class="input is-medium" type="text" placeholder="#000000" v-model="config.pageBgColor">
+                  <color-field v-model="config.pageBgColor" />
                 </div>
               </div>
             </div>
@@ -247,7 +252,7 @@
                   {{ 'settings.label.page_font_color'|trans }}
                 </label>
                 <div class="control">
-                  <input class="input is-medium" type="text" placeholder="#000000" v-model="config.pageFontColor">
+                  <color-field v-model="config.pageFontColor" />
                 </div>
               </div>
             </div>
@@ -257,7 +262,7 @@
                   {{ 'settings.label.header_bg_color'|trans }}
                 </label>
                 <div class="control">
-                  <input class="input is-medium" type="text" placeholder="#000000" v-model="config.headerBgColor">
+                  <color-field v-model="config.headerBgColor" />
                 </div>
               </div>
             </div>
@@ -267,7 +272,7 @@
                   {{ 'settings.label.header_font_color'|trans }}
                 </label>
                 <div class="control">
-                  <input class="input is-medium" type="text" placeholder="#000000" v-model="config.headerFontColor">
+                  <color-field v-model="config.headerFontColor" />
                 </div>
               </div>
             </div>
@@ -280,7 +285,7 @@
                   {{ 'settings.label.footer_bg_color'|trans }}
                 </label>
                 <div class="control">
-                  <input class="input is-medium" type="text" placeholder="#000000" v-model="config.footerBgColor">
+                  <color-field v-model="config.footerBgColor" />
                 </div>
               </div>
             </div>
@@ -290,7 +295,7 @@
                   {{ 'settings.label.footer_font_color'|trans }}
                 </label>
                 <div class="control">
-                  <input class="input is-medium" type="text" placeholder="#000000" v-model="config.footerFontColor">
+                  <color-field v-model="config.footerFontColor" />
                 </div>
               </div>
             </div>
@@ -300,7 +305,7 @@
                   {{ 'settings.label.button_bg_color'|trans }}
                 </label>
                 <div class="control">
-                  <input class="input is-medium" type="text" placeholder="#000000" v-model="config.buttonBgColor">
+                  <color-field v-model="config.buttonBgColor" />
                 </div>
               </div>
             </div>
@@ -310,7 +315,7 @@
                   {{ 'settings.label.button_font_color'|trans }}
                 </label>
                 <div class="control">
-                  <input class="input is-medium" type="text" placeholder="#000000" v-model="config.buttonFontColor">
+                  <color-field v-model="config.buttonFontColor" />
                 </div>
               </div>
             </div>
@@ -323,7 +328,7 @@
                   {{ 'settings.label.button_priority_bg_color'|trans }}
                 </label>
                 <div class="control">
-                  <input class="input is-medium" type="text" placeholder="#000000" v-model="config.buttonPriorityBgColor">
+                  <color-field v-model="config.buttonPriorityBgColor" />
                 </div>
               </div>
             </div>
@@ -333,7 +338,7 @@
                   {{ 'settings.label.button_priority_font_color'|trans }}
                 </label>
                 <div class="control">
-                  <input class="input is-medium" type="text" placeholder="#000000" v-model="config.buttonPriorityFontColor">
+                  <color-field v-model="config.buttonPriorityFontColor" />
                 </div>
               </div>
             </div>
@@ -343,7 +348,7 @@
                   {{ 'settings.label.button_normal_bg_color'|trans }}
                 </label>
                 <div class="control">
-                  <input class="input is-medium" type="text" placeholder="#000000" v-model="config.buttonNormalBgColor">
+                  <color-field v-model="config.buttonNormalBgColor" />
                 </div>
               </div>
             </div>
@@ -353,7 +358,7 @@
                   {{ 'settings.label.button_normal_font_color'|trans }}
                 </label>
                 <div class="control">
-                  <input class="input is-medium" type="text" placeholder="#000000" v-model="config.buttonNormalFontColor">
+                  <color-field v-model="config.buttonNormalFontColor" />
                 </div>
               </div>
             </div>
@@ -433,6 +438,69 @@
           </div>
         </form>
 
+        <form @submit.prevent="save" v-if="tab==='schedule'">
+          <p class="help">{{ 'settings.schedule.help'|trans }}</p>
+
+          <div class="field">
+            <div class="control">
+              <label class="checkbox">
+                <input type="checkbox" v-model="config.horarioAtivo">
+                {{ 'settings.label.schedule_enable'|trans }}
+              </label>
+            </div>
+          </div>
+
+          <table class="table is-fullwidth" v-if="config.horarioAtivo">
+            <thead>
+              <tr>
+                <th>{{ 'settings.label.schedule_start'|trans }}</th>
+                <th>{{ 'settings.label.schedule_end'|trans }}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(janela, index) in config.horarioJanelas" :key="index">
+                <td>
+                  <input class="input" type="time" v-model="janela.inicio">
+                </td>
+                <td>
+                  <input class="input" type="time" v-model="janela.fim">
+                </td>
+                <td>
+                  <button type="button" class="button is-danger is-outlined" @click="removeJanela(index)">
+                    <span class="icon"><i class="fa fa-trash"></i></span>
+                  </button>
+                </td>
+              </tr>
+              <tr v-if="!config.horarioJanelas || !config.horarioJanelas.length">
+                <td colspan="3">{{ 'settings.services.empty'|trans }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="field" v-if="config.horarioAtivo">
+            <div class="control">
+              <button type="button" class="button is-outlined" @click="addJanela">
+                <span class="icon"><i class="fa fa-plus"></i></span>
+                <span>{{ 'settings.btn.add_schedule'|trans }}</span>
+              </button>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="field is-grouped is-grouped-right">
+            <div class="control">
+              <button type="submit" class="button is-primary is-large">
+                {{ 'settings.btn.save'|trans }} &nbsp;
+                <span class="icon is-small">
+                  <i class="fa fa-save"></i>
+                </span>
+              </button>
+            </div>
+          </div>
+        </form>
+
         <form @submit.prevent="save" v-if="tab==='services'">
           <div class="field">
             <label class="label">
@@ -472,10 +540,10 @@
                   {{s.servicoUnidade.servico.nome}}
                 </td>
                 <td style="width:200px">
-                  <input class="input is-medium" type="text" placeholder="#000000" v-model="s.bgColor">
+                  <color-field v-model="s.bgColor" />
                 </td>
                 <td style="width:200px">
-                  <input class="input is-medium" type="text" placeholder="#000000" v-model="s.fontColor">
+                  <color-field v-model="s.fontColor" />
                 </td>
               </tr>
               <tr v-if="!config.services || !config.services.length">
@@ -524,10 +592,10 @@
                   {{d.department.nome}}
                 </td>
                 <td style="width:200px">
-                  <input class="input is-medium" type="text" placeholder="#000000" v-model="d.bgColor">
+                  <color-field v-model="d.bgColor" />
                 </td>
                 <td style="width:200px">
-                  <input class="input is-medium" type="text" placeholder="#000000" v-model="d.fontColor">
+                  <color-field v-model="d.fontColor" />
                 </td>
               </tr>
             </tbody>
@@ -596,6 +664,7 @@
 <script>
   import Vue from 'vue'
   import Sortable from 'sortablejs'
+  import ColorField from '@/components/ColorField'
 
   Vue.directive('sortable', {
     inserted: function (el, binding) {
@@ -624,6 +693,8 @@
     ctx.config.groupByDepartments = !!ctx.config.groupByDepartments
     ctx.config.services = ctx.config.services || []
     ctx.config.departments = ctx.config.departments || []
+    ctx.config.horarioAtivo = !!ctx.config.horarioAtivo
+    ctx.config.horarioJanelas = ctx.config.horarioJanelas || []
     ctx.config.pageBgColor = ctx.config.pageBgColor || '#FFFFFF'
     ctx.config.pageFontColor = ctx.config.pageFontColor || '#000000'
     ctx.config.headerBgColor = ctx.config.headerBgColor || '#4FC08D'
@@ -676,6 +747,9 @@
 
   export default {
     name: 'Settings',
+    components: {
+      ColorField
+    },
     data () {
       return {
         tab: 'interface',
@@ -735,6 +809,12 @@
       },
       changeUnity () {
         this.loadServices()
+      },
+      addJanela () {
+        this.config.horarioJanelas.push({ inicio: '', fim: '' })
+      },
+      removeJanela (index) {
+        this.config.horarioJanelas.splice(index, 1)
       },
       loadUnities () {
         this.$store.dispatch('fetchUnities').then(() => {}, (error) => {
@@ -844,4 +924,10 @@
           max-height: 60px
       .columns .column
         padding: 2rem
+      .menu-list
+        a
+          border-radius: 8px
+          transition: background-color .12s ease
+          &.is-active
+            box-shadow: 0 2px 8px rgba(10, 10, 10, .18)
   </style>
