@@ -39,18 +39,31 @@ docker run --rm -it -v "$PWD:/app" -w /app node:10 npm run build
 
 Depois de rodar `npm install` uma vez, o `package-lock.json` pode ser regenerado com pequenas diferenças de resolução (ruído, não relacionado ao código) — evite commitar essas mudanças de lockfile a menos que esteja atualizando dependências de propósito.
 
-## Rodando o build web localmente (Docker)
+## Deploy (Docker / Easypanel)
 
-Depois de gerar `dist/web/` (comando acima), sirva com qualquer servidor estático. Exemplo com nginx:
+O `Dockerfile` na raiz faz o build completo em duas etapas (build com `node:10`, execução com `nginx:alpine`) — não depende de gerar `dist/web/` manualmente antes. É o que plataformas como **Easypanel** (ou qualquer serviço que builde a partir de um Dockerfile num repositório Git) usam diretamente:
 
 ```bash
+docker build -t triage-app .
+docker run -d --name triage-app -p 8082:80 triage-app
+```
+
+Acesse `http://localhost:8082`. A porta exposta pelo container é sempre `80`.
+
+### Testando o build web sem gerar imagem
+
+Para iterar mais rápido sem rebuildar a imagem inteira a cada mudança:
+
+```bash
+# gera dist/web/
+docker run --rm -it -v "$PWD:/app" -w /app node:10 npm run build:web
+
+# serve dist/web/ direto, sem rebuildar a imagem
 docker run -d --name triage-app \
   -p 8082:80 \
   -v "$PWD/dist/web:/usr/share/nginx/html:ro" \
   nginx:alpine
 ```
-
-Acesse `http://localhost:8082`.
 
 > A imagem oficial `novosga/triage-app` no Docker Hub também é só um nginx servindo um `dist/web` pré-buildado — não tem lógica de servidor nenhuma.
 
